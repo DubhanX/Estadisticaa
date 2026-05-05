@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solucionador de Estadística</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .tab-btn:hover {
+            border-color: #667eea;
+        }
+
+        .content {
+            display: none;
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        .exercise-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .exercise-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #444;
+            font-size: 14px;
+        }
+
+        input[type="number"],
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        input[type="number"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        button.secondary {
+            background: #6c757d;
+        }
+
+        button.secondary:hover {
+            background: #5a6268;
+        }
+
+        .result-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 6px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .result-box.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-box h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .result-item {
+            margin-bottom: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            color: #666;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .result-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #667eea;
+            margin-top: 3px;
+        }
+
+        .chart-container {
+            position: relative;
+            margin-top: 30px;
+            height: 300px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab-btn {
+                width: 100%;
+            }
+        }
+
+        .info-box {
+            background: #fffacd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .formula {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            margin: 10px 0;
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Solucionador de Estadística</h1>
+            <p>Estadística Descriptiva e Inferencial</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('descriptiva')">📈 Descriptiva</button>
+            <button class="tab-btn" onclick="switchTab('varianzas')">📊 Varianzas</button>
+            <button class="tab-btn" onclick="switchTab('inferencial')">🎯 Inferencial</button>
+            <button class="tab-btn" onclick="switchTab('distribucion')">📐 Distribuciones</button>
+        </div>
+
+        <!-- ESTADÍSTICA DESCRIPTIVA -->
+        <div id="descriptiva" class="content active">
+            <!-- Medidas de tendencia central -->
+            <div class="exercise-card">
+                <h3>📍 Medidas de Tendencia Central</h3>
+                <div class="input-group">
+                    <label>Ingresa tus datos (separados por comas):</label>
+                    <textarea id="datos-mtc" placeholder="ej: 10, 20, 30, 40, 50">10, 20, 30, 40, 50</textarea>
+                </div>
+                <div class="button-group">
+                    <button onclick="calcularMTC()">Calcular</button>
+                </div>
+                <div id="resultado-mtc" class="result-box">
+                    <h4>Resultados</h4>
+                    <div class="result-item">
+                        <div class="result-label">Media (Promedio)</div>
+                        <div class="result-value" id="mtc-media">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Mediana</div>
+                        <div class="result-value" id="mtc-mediana">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Moda</div>
+                        <div class="result-value" id="mtc-moda">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medidas de dispersión -->
+            <div class="exercise-card">
+                <h3>📊 Medidas de Dispersión</h3>
+                <div class="input-group">
+                    <label>Ingresa tus datos (separados por comas):</label>
+                    <textarea id="datos-disp" placeholder="ej: 10, 20, 30, 40, 50">10, 20, 30, 40, 50</textarea>
+                </div>
+                <div class="button-group">
+                    <button onclick="calcularDispersion()">Calcular</button>
+                </div>
+                <div id="resultado-disp" class="result-box">
+                    <h4>Resultados</h4>
+                    <div class="result-item">
+                        <div class="result-label">Rango</div>
+                        <div class="result-value" id="disp-rango">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Desviación Estándar</div>
+                        <div class="result-value" id="disp-desv">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Varianza</div>
+                        <div class="result-value" id="disp-var">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Coeficiente de Variación</div>
+                        <div class="result-value" id="disp-cv">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Percentiles y Cuartiles -->
+            <div class="exercise-card">
+                <h3>📐 Percentiles y Cuartiles</h3>
+                <div class="input-group">
+                    <label>Ingresa tus datos (separados por comas):</label>
+                    <textarea id="datos-perc" placeholder="ej: 10, 20, 30, 40, 50">10, 20, 30, 40, 50</textarea>
+                </div>
+                <div class="button-group">
+                    <button onclick="calcularPercentiles()">Calcular</button>
+                </div>
+                <div id="resultado-perc" class="result-box">
+                    <h4>Resultados</h4>
+                    <div class="result-item">
+                        <div class="result-label">Q1 (25%)</div>
+                        <div class="result-value" id="perc-q1">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Q2 (50% / Mediana)</div>
+                        <div class="result-value" id="perc-q2">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Q3 (75%)</div>
+                        <div class="result-value" id="perc-q3">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">RIQ (Rango Intercuartílico)</div>
+                        <div class="result-value" id="perc-iqr">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Correlación y Regresión -->
+            <div class="exercise-card">
+                <h3>📈 Correlación y Regresión Lineal</h3>
+                <div class="grid-2">
+                    <div class="input-group">
+                        <label>X (separados por comas):</label>
+                        <textarea id="datos-x" placeholder="ej: 1, 2, 3, 4, 5">1, 2, 3, 4, 5</textarea>
+                    </div>
+                    <div class="input-group">
+                        <label>Y (separados por comas):</label>
+                        <textarea id="datos-y" placeholder="ej: 2, 4, 5, 4, 5">2, 4, 5, 4, 5</textarea>
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button onclick="calcularCorrelacion()">Calcular</button>
+                </div>
+                <div id="resultado-corr" class="result-box">
+                    <h4>Resultados</h4>
+                    <div class="result-item">
+                        <div class="result-label">Covarianza</div>
+                        <div class="result-value" id="corr-cov">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Correlación de Pearson (r)</div>
+                        <div class="result-value" id="corr-pearson">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">R² (Coeficiente de Determinación)</div>
+                        <div class="result-value" id="corr-r2">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Pendiente (a)</div>
+                        <div class="result-value" id="corr-a">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Intercepto (b)</div>
+                        <div class="result-value" id="corr-b">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Ecuación: Y = aX + b</div>
+                        <div class="result-value" id="corr-eq">-</div>
+                    </div>
+                </div>
+                <div class="chart-container" id="chart-corr" style="display: none;">
+                    <canvas id="regression-chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- VARIANZAS Y DESVIACIONES ESTÁNDAR -->
+        <div id="varianzas" class="content">
+            <!-- Varianza y Desviación Estándar Simples -->
+            <div class="exercise-card">
+                <h3>📊 Varianza y Desviación Estándar (Básico)</h3>
+                <div class="info-box">
+                    La varianza mide la dispersión de los datos. La desviación estándar es la raíz de la varianza.
+                </div>
+                <div class="input-group">
+                    <label>Ingresa tus datos (separados por comas):</label>
+                    <textarea id="var-datos" placeholder="ej: 10, 20, 30, 40, 50">10, 20, 30, 40, 50</textarea>
+                </div>
+                <div class="button-group">
+                    <button onclick="calcularVarianzaSimple()">Calcular</button>
+                </div>
+                <div id="resultado-var-simple" class="result-box">
+                    <h4>Resultados</h4>
+                    <div class="result-item">
+                        <div class="result-label">Media (x̄)</div>
+                        <div class="result-value" id="var-media">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Varianza Poblacional (σ²)</div>
+                        <div class="result-value" id="var-pob">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Desviación Estándar Poblacional (σ)</div>
+                        <div class="result-value" id="desv-pob">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Varianza Muestral (s²)</div>
+                        <div class="result-value" id="var-muestra">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Desviación Estándar Muestral (s)</div>
+                        <div class="result-value" id="desv-muestra">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Rango</div>
+                        <div class="result-value" id="var-rango">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Análisis de Varianza (ANOVA) -->
+            <div class="exercise-card">
+                <h3>🔬 Análisis de Varianza (ANOVA) - Un Factor</h3>
+                <div class="info-box">
+                    Compara las medias de dos o más grupos para determinar si hay diferencias significativas.
+                </div>
+                <div class="input-group">
+                    <label>Grupo 1 (separados por comas):</label>
+                    <textarea id="anova-g1" placeholder="ej: 10, 12, 14, 11, 13">10, 12, 14, 11, 13</textarea>
+                </div>
+                <div class="input-group">
+                    <label>Grupo 2 (separados por comas):</label>
+                    <textarea id="anova-g2" placeholder="ej: 20, 22, 19, 21, 20">20, 22, 19, 21, 20</textarea>
+                </div>
+                <div class="input-group">
+                    <label>Grupo 3 (separados por comas) - Opcional:</label>
+                    <textarea id="anova-g3" placeholder="ej: 30, 28, 32, 29, 31">30, 28, 32, 29, 31</textarea>
+                </div>
+                <div class="button-group">
+                    <button onclick="calcularANOVA()">Calcular ANOVA</button>
+                </div>
+                <div id="resultado-anova" class="result-box">
+                    <h4>Tabla ANOVA</h4>
+                    <div style="overflow-x: auto; margin: 15px 0;">
+                        <table style="width: 100%; font-size: 13px; border-collapse: collapse;">
+                            <tr style="border-bottom: 1px solid #ddd;">
+                                <th style="text-align: left; padding: 8px; font-weight: 600;">Fuente</th>
+                                <th style="text-align: center; padding: 8px;">SC</th>
+                                <th style="text-align: center; padding: 8px;">GL</th>
+                                <th style="text-align: center; padding: 8px;">CM</th>
+                                <th style="text-align: center; padding: 8px;">F</th>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #ddd;">
+                                <td style="padding: 8px;">Entre Grupos</td>
+                                <td style="text-align: center; padding: 8px;" id="anova-sce">-</td>
+                                <td style="text-align: center; padding: 8px;" id="anova-gle">-</td>
+                                <td style="text-align: center; padding: 8px;" id="anova-cme">-</td>
+                                <td style="text-align: center; padding: 8px;" id="anova-f">-</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #ddd;">
+                                <td style="padding: 8px;">Dentro de Grupos</td>
+                                <td style="text-align: center; padding: 8px;" id="anova-scd">-</td>
+                                <td style="text-align: center; padding: 8px;" id="anova-gld">-</td>
+                                <td style="text-align: center; padding: 8px;" id="anova-cmd">-</td>
+                                <td style="text-align: center; padding: 8px;">-</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; font-weight: 600;">Total</td>
+                                <td style="text-align: center; padding: 8px;" id="anova-sct">-</td>
+                                <td style="text-align: center; padding: 8px;" id="anova-glt">-</td>
+                                <td style="text-align: center; padding: 8px;">-</td>
+                                <td style="text-align: center; padding: 8px;">-</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Conclusión (α = 0.05)</div>
+                        <div class="result-value" id="anova-conclus">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparación de Varianzas (Test F) -->
+            <div class="exercise-card">
+                <h3>⚖️ Test F (Comparación de Varianzas)</h3>
+                <div class="info-box">
+                    Prueba si dos varianzas poblacionales son iguales (Test de Levene/Bartlett).
+                </div>
+                <div class="grid-2">
+                    <div class="input-group">
+                        <label>Varianza 1 (s₁²):</label>
+                        <input type="number" id="testf-var1" value="25" step="0.01">
+                    </div>
+                    <div class="input-group">
+                        <label>Varianza 2 (s₂²):</label>
+                        <input type="number" id="testf-var2" value="16" step="0.01">
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="input-group">
+                        <label>GL Varianza 1 (n₁-1):</label>
+                        <input type="number" id="testf-gl1" value="20" step="1" min="1">
+                    </div>
+                    <div class="input-group">
+                        <label>GL Varianza 2 (n₂-1):</label>
+                        <input type="number" id="testf-gl2" value="25" step="1" min="1">
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button onclick="calcularTestF()">Calcular Test F</button>
+                </div>
+                <div id="resultado-testf" class="result-box">
+                    <h4>Resultados</h4>
+                    <div class="result-item">
+                        <div class="result-label">Estadístico F</div>
+                        <div class="result-value" id="testf-f">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">GL Numerador</div>
+                        <div class="result-value" id="testf-gln">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">GL Denominador</div>
+                        <div class="result-value" id="testf-gld">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Conclusión (α = 0.05)</div>
+                        <div class="result-value" id="testf-conclus">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Intervalo de Confianza para Varianza -->
+            <div class="exercise-card">
+                <h3>📐 Intervalo de Confianza para la Varianza</h3>
+                <div class="info-box">
+                    Calcula el rango donde probablemente se encuentre la varianza poblacional.
+                </div>
+                <div class="grid-2">
+                    <div class="input-group">
+                        <label>Varianza Muestral (s²):</label>
+                        <input type="number" id="icv-var" value="25" step="0.01">
+                    </div>
+                    <div class="input-group">
+                        <label>Tamaño de muestra (n):</label>
+                        <input type="number" id="icv-n" value="30" step="1" min="1">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Nivel de confianza (%):</label>
+                    <input type="number" id="icv-conf" value="95" min="1" max="99.99" step="0.01">
+                </div>
+                <div class="button-group">
+                    <button onclick="calcularICVarianza()">Calcular</button>
+                </div>
+                <div id="resultado-icv" class="result-box">
+                    <h4>Resultados</h4>
+                    <div class="result-item">
+                        <div class="result-label">Grados de Libertad</div>
+                        <div class="result-value" id="icv-gl">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">χ² Inferior</div>
+                        <div class="result-value" id="icv-chi-inf">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">χ² Superior</div>
+                        <div class="result-value" id="icv-chi-sup">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Intervalo de Confianza</div>
+                        <div class="result-value" id="icv-intervalo">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Desviación Estándar Ponderada -->
+            <div class="exercise-card">
+                <h3>⚖️ Desviación Estándar Ponderada</h3>
+                <div class="info-box">
+                    Calcula la desviación estándar considerando pesos para cada dato.
+                </div>
+                <div class="input-group">
+                    <label>Valores (separados por comas):</label>
+                    <textarea id="desvp-valores" placeholder="ej: 10, 20, 30, 40">10, 20, 30, 40</textarea>
+                </div>
+                <div class="input-group">
+                    <label>Pesos (separados por comas):</label>
+                    <textarea id="desvp-pesos" placeholder="ej: 1, 2, 3, 4">1, 2, 3, 4</textarea>
+                </div>
+                <div class="button-group">
+                    <button onclick="calcularDesvPonderada()">Calcular</button>
+                </div>
+                <div id="resultado-desvp" class="result-box">
+                    <h4>Resultados</h4>
+                    <div class="result-item">
+                        <div class="result-label">Media Ponderada</div>
+                        <div class="result-value" id="desvp-media">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Varianza Ponderada</div>
+                        <div class="result-value" id="desvp-var">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Desviación Estándar Ponderada</div>
+                        <div class="result-value" id="desvp-desv">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Suma de Pesos</div>
+                        <div class="result-value" id="desvp-sumapesos">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Datos Agrupados -->
+            <div class="exercise-card">
+                <h3>📊 Varianza y Desv. Estándar (Datos Agrupados)</h3>
+                <div class="info-box">
+                    Calcula para datos organizados en intervalos con sus frecuencias.
+                </div>
+                <div class="input-group">
+                    <label>Marcas de clase (separadas por comas):</label>
+                    <textarea id="dagr-marcas" placeholder="ej: 10, 20, 30, 40">10, 20, 30, 40</textarea>
+                </div>
+                <div class="input-group">
+                    <label>Frecuencias (separadas por comas):</label>
+                    <textarea id="dagr-freq" placeholder="ej: 5, 15, 20, 10">5, 15, 20, 10</textarea>
+                </div>
+                <div class="button-group">
+                    <button onclick="calcularDatosAgrupados()">Calcular</button>
+                </div>
+                <div id="resultado-dagr" class="result-box">
+                    <h4>Resultados</h4>
+                    <div class="result-item">
+                        <div class="result-label">Total de Datos (n)</div>
+                        <div class="result-value" id="dagr-n">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Media (x̄)</div>
+                        <div class="result-value" id="dagr-media">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Varianza (σ²)</div>
+                        <div class="result-value" id="dagr-var">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Desviación Estándar (σ)</div>
+                        <div class="result-value" id="dagr-desv">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Coeficiente de Variación (%)</div>
+                        <div class="result-value" id="dagr-cv">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="inferencial" class="content">
+                <!-- Intervalo de Confianza para la Media -->
+                <div class="exercise-card">
+                    <h3>📏 Intervalo de Confianza para la Media</h3>
+                    <div class="info-box">
+                        Se calcula el rango donde probablemente se encuentre el parámetro poblacional.
+                    </div>
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>Media muestral (x̄):</label>
+                            <input type="number" id="ic-media" value="100" step="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label>Desviación Estándar (σ):</label>
+                            <input type="number" id="ic-desv" value="15" step="0.01">
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>Tamaño de la muestra (n):</label>
+                            <input type="number" id="ic-n" value="30" step="1" min="1">
+                        </div>
+                        <div class="input-group">
+                            <label>Nivel de confianza (%):</label>
+                            <input type="number" id="ic-conf" value="95" min="1" max="99.99" step="0.01">
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <button onclick="calcularIC()">Calcular</button>
+                    </div>
+                    <div id="resultado-ic" class="result-box">
+                        <h4>Resultados</h4>
+                        <div class="result-item">
+                            <div class="result-label">Error Estándar</div>
+                            <div class="result-value" id="ic-ee">-</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Valor Z (crítico)</div>
+                            <div class="result-value" id="ic-z">-</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Margen de Error</div>
+                            <div class="result-value" id="ic-me">-</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Intervalo de Confianza</div>
+                            <div class="result-value" id="ic-intervalo">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Test de Hipótesis - t de Student -->
+                <div class="exercise-card">
+                    <h3>🎯 Test t de Student (Una Muestra)</h3>
+                    <div class="info-box">
+                        Prueba si la media de la muestra es significativamente diferente de un valor hipotético.
+                    </div>
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>Media muestral (x̄):</label>
+                            <input type="number" id="t-test-media" value="105" step="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label>Desviación Estándar (s):</label>
+                            <input type="number" id="t-test-desv" value="15" step="0.01">
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>Tamaño de muestra (n):</label>
+                            <input type="number" id="t-test-n" value="25" step="1" min="1">
+                        </div>
+                        <div class="input-group">
+                            <label>Media hipotética (μ₀):</label>
+                            <input type="number" id="t-test-h0" value="100" step="0.01">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Tipo de prueba:</label>
+                        <select id="t-test-tipo"
+                            style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px;">
+                            <option value="bilateral">Bilateral (≠)</option>
+                            <option value="derecha">Unilateral derecha (>)</option>
+                            <option value="izquierda">Unilateral izquierda (<)< /option>
+                        </select>
+                    </div>
+                    <div class="button-group">
+                        <button onclick="calcularTTest()">Calcular</button>
+                    </div>
+                    <div id="resultado-ttest" class="result-box">
+                        <h4>Resultados</h4>
+                        <div class="result-item">
+                            <div class="result-label">Grados de Libertad</div>
+                            <div class="result-value" id="ttest-gl">-</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Estadístico t</div>
+                            <div class="result-value" id="ttest-t">-</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">P-valor (α = 0.05)</div>
+                            <div class="result-value" id="ttest-pvalor">-</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Conclusión</div>
+                            <div class="result-value" id="ttest-conclus">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Test Chi-Cuadrado -->
+                <div class="exercise-card">
+                    <h3>🎲 Test Chi-Cuadrado (χ²)</h3>
+                    <div class="info-box">
+                        Prueba la independencia entre dos variables categóricas.
+                    </div>
+                    <div class="input-group">
+                        <label>Frecuencias observadas (separadas por comas):</label>
+                        <textarea id="chi2-observadas" placeholder="ej: 10, 20, 30, 15">10, 20, 30, 15</textarea>
+                    </div>
+                    <div class="input-group">
+                        <label>Frecuencias esperadas (separadas por comas):</label>
+                        <textarea id="chi2-esperadas"
+                            placeholder="ej: 18.75, 18.75, 18.75, 18.75">18.75, 18.75, 18.75, 18.75</textarea>
+                    </div>
+                    <div class="button-group">
+                        <button onclick="calcularChi2()">Calcular</button>
+                    </div>
+                    <div id="resultado-chi2" class="result-box">
+                        <h4>Resultados</h4>
+                        <div class="result-item">
+                            <div class="result-label">Grados de Libertad</div>
+                            <div class="result-value" id="chi2-gl">-</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Estadístico χ²</div>
+                            <div class="result-value" id="chi2-estadistico">-</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Conclusión (α = 0.05)</div>
+                            <div class="result-value" id="chi2-conclus">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Proporciones -->
+                <div class="exercise-card">
+                    <h3>📊 Intervalo de Confianza para Proporciones</h3>
+                    <div class="info-box">
+                        Calcula el rango donde probablemente se encuentre la proporción poblacional.
+                    </div>
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>Número de éxitos (x):</label>
+                            <input type="number" id="prop-x" value="60" step="1" min="0">
+                        </div>
+                        <div class="input-group">
+                            <label>Tamaño de muestra (n):</label>
+                            <input type="number" id="prop-n" value="100" step="1" min="1">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Nivel de confianza (%):</label>
+                        <input type="number" id="prop-conf" value="95" min="1" max="99.99" step="0.01">
+                    </div>
+                    <div class="button-group">
+                        <button onclick="calcularProporciones()">Calcular</button>
+                    </div>
+                    <div id="resultado-prop" class="result-box">
+                        <h4>Resultados</h4>
+                        <div class="result-item">
+                            <div class="result-label">Proporción Muestral (p̂)</div>
+                            <div class="result-value" id="prop-p">-</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Error Estándar</div>
+                            <div class="result-value" id="prop-ee">-</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Margen de Error</div>
+                            <div class="result-value" id="prop-me">-</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Intervalo de Confianza</div>
+                            <div class="result-value" id="prop-intervalo">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DISTRIBUCIONES -->
+            <div id="distribucion" class="content">
+                <!-- Distribución Normal -->
+                <div class="exercise-card">
+                    <h3>📈 Distribución Normal (Gaussiana)</h3>
+                    <div class="info-box">
+                        Calcula probabilidades usando la distribución normal estándar (Z).
+                    </div>
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>Media (μ):</label>
+                            <input type="number" id="norm-media" value="0" step="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label>Desviación Estándar (σ):</label>
+                            <input type="number" id="norm-desv" value="1" step="0.01" min="0.01">
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>Valor X:</label>
+                            <input type="number" id="norm-x" value="1" step="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label>Tipo de probabilidad:</label>
+                            <select id="norm-tipo"
+                                style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px;">
+                                <option value="menor">P(X < valor)</option>
+                                <option value="mayor">P(X > valor)</option>
+                                <option value="entre">P(X entre dos valores)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="input-group" id="norm-x2-group" style="display: none;">
+                        <label>Segundo valor X:</label>
+                        <input type="number" id="norm-x2" value="2" step="0.01">
+                    </div>
+                    <div class="button-group">
+                        <button onclick="calcularNormal()">Calcular</button>
+                    </div>
+                    <div id="resultado-norm" class="result-box">
+                        <h4>Resultados</h4>
+                        <div class="result-item">
+                            <div class="result-label">Puntuación Z</div>
+                            <div class="result-value" id="norm-z">-</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Probabilidad</div>
+                            <div class="result-value" id="norm-prob">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Distribución Binomial -->
+                <div class="exercise-card">
+                    <h3>🎲 Distribución Binomial</h3>
+                    <div class="info-box">
+                        Calcula probabilidades en experimentos con dos resultados posibles.
+                    </div>
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>Número de ensayos (n):</label>
+                            <input type="number" id="binom-n" value="10" step="1" min="1">
+                        </div>
+                        <div class="input-group">
+                            <label>Número de éxitos (k):</label>
+                            <input type="number" id="binom-k" value="5" step="1" min="0">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Probabilidad de éxito (p) (0 a 1):</label>
+                        <input type="number" id="binom-p" value="0.5" step="0.01" min="0" max="1">
+                    </div>
+                    <div class="button-group">
+                        <button onclick="calcularBinomial()">Calcular</button>
+                    </div>
+                    <div id="resultado-binom" class="result-box">
+                        <h4>Resultados</h4>
+                        <div class="result-item">
+                            <div class="result-label">P(X = k)</div>
+                            <div class="result-value" id="binom-prob">-</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Media (μ)</div>
+                            <div class="result-value" id="binom-media">-</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Varianza (σ²)</div>
+                            <div class="result-value" id="binom-var">-</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Desviación Estándar (σ)</div>
+                            <div class="result-value" id="binom-desv">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Distribución Poisson -->
+                <div class="exercise-card">
+                    <h3>📍 Distribución de Poisson</h3>
+                    <div class="info-box">
+                        Modela el número de eventos en un intervalo fijo.
+                    </div>
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>Lambda (λ) - eventos esperados:</label>
+                            <input type="number" id="poisson-lambda" value="3" step="0.01" min="0.01">
+                        </div>
+                        <div class="input-group">
+                            <label>Número de eventos (k):</label>
+                            <input type="number" id="poisson-k" value="2" step="1" min="0">
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <button onclick="calcularPoisson()">Calcular</button>
+                    </div>
+                    <div id="resultado-poisson" class="result-box">
+                        <h4>Resultados</h4>
+                        <div class="result-item">
+                            <div class="result-label">P(X = k)</div>
+                            <div class="result-value" id="poisson-prob">-</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Media (μ)</div>
+                            <div class="result-value" id="poisson-media">-</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Varianza (σ²)</div>
+                            <div class="result-value" id="poisson-var">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Cambiar entre pestañas
+            function switchTab(tabName) {
+                const contents = document.querySelectorAll('.content');
+                const buttons = document.querySelectorAll('.tab-btn');
+
+                contents.forEach(c => c.classList.remove('active'));
+                buttons.forEach(b => b.classList.remove('active'));
+
+                document.getElementById(tabName).classList.add('active');
+                event.target.classList.add('active');
+            }
+
+            // Mostrar/ocultar campo adicional en distribución normal
+            document.addEventListener('change', (e) => {
+                if (e.target.id === 'norm-tipo') {
+                    const group = document.getElementById('norm-x2-group');
+                    group.style.display = e.target.value === 'entre' ? 'block' : 'none';
+                }
+            });
+
+            // ===== ESTADÍSTICA DESCRIPTIVA =====
+
+            function parseDatos(str) {
+                return str.split(',').map(x => parseFloat(x.trim())).filter(x => !isNaN(x));
+            }
+
+            function calcularMTC() {
+                const datos = parseDatos(document.getElementById('datos-mtc').value);
+                if (datos.length === 0) {
+                    alert('Ingresa datos válidos');
+                    return;
+                }
+
+                datos.sort((a, b) => a - b);
+                const media = datos.reduce((a, b) => a + b, 0) / datos.length;
+                const mediana = datos.length % 2 === 0
+                    ? (datos[datos.length / 2 - 1] + datos[datos.length / 2]) / 2
+                    : datos[Math.floor(datos.length / 2)];
+
+                const freq = {};
+                datos.forEach(d => freq[d] = (freq[d] || 0) + 1);
+                const moda = Object.keys(freq).reduce((a, b) => freq[a] > freq[b] ? a : b);
+
+                document.getElementById('mtc-media').textContent = media.toFixed(4);
+                document.getElementById('mtc-mediana').textContent = mediana.toFixed(4);
+                document.getElementById('mtc-moda').textContent = moda;
+
+                document.getElementById('resultado-mtc').classList.add('show');
+            }
+
+            function calcularDispersion() {
+                const datos = parseDatos(document.getElementById('datos-disp').value);
+                if (datos.length === 0) {
+                    alert('Ingresa datos válidos');
+                    return;
+                }
+
+                const rango = Math.max(...datos) - Math.min(...datos);
+                const media = datos.reduce((a, b) => a + b, 0) / datos.length;
+                const varianza = datos.reduce((a, x) => a + Math.pow(x - media, 2), 0) / (datos.length - 1);
+                const desv = Math.sqrt(varianza);
+                const cv = (desv / media) * 100;
+
+                document.getElementById('disp-rango').textContent = rango.toFixed(4);
+                document.getElementById('disp-desv').textContent = desv.toFixed(4);
+                document.getElementById('disp-var').textContent = varianza.toFixed(4);
+                document.getElementById('disp-cv').textContent = cv.toFixed(2) + '%';
+
+                document.getElementById('resultado-disp').classList.add('show');
+            }
+
+            function calcularPercentiles() {
+                const datos = parseDatos(document.getElementById('datos-perc').value);
+                if (datos.length === 0) {
+                    alert('Ingresa datos válidos');
+                    return;
+                }
+
+                datos.sort((a, b) => a - b);
+
+                const percentil = (arr, p) => {
+                    const idx = (p / 100) * (arr.length - 1);
+                    const lower = Math.floor(idx);
+                    const upper = Math.ceil(idx);
+                    const weight = idx - lower;
+
+                    if (lower === upper) return arr[lower];
+                    return arr[lower] * (1 - weight) + arr[upper] * weight;
+                };
+
+                const q1 = percentil(datos, 25);
+                const q2 = percentil(datos, 50);
+                const q3 = percentil(datos, 75);
+                const iqr = q3 - q1;
+
+                document.getElementById('perc-q1').textContent = q1.toFixed(4);
+                document.getElementById('perc-q2').textContent = q2.toFixed(4);
+                document.getElementById('perc-q3').textContent = q3.toFixed(4);
+                document.getElementById('perc-iqr').textContent = iqr.toFixed(4);
+
+                document.getElementById('resultado-perc').classList.add('show');
+            }
+
+            function calcularCorrelacion() {
+                const x = parseDatos(document.getElementById('datos-x').value);
+                const y = parseDatos(document.getElementById('datos-y').value);
+
+                if (x.length !== y.length || x.length < 2) {
+                    alert('Ingresa datos válidos y del mismo tamaño');
+                    return;
+                }
+
+                const n = x.length;
+                const mediaX = x.reduce((a, b) => a + b) / n;
+                const mediaY = y.reduce((a, b) => a + b) / n;
+
+                let cov = 0, varX = 0, varY = 0;
+                for (let i = 0; i < n; i++) {
+                    cov += (x[i] - mediaX) * (y[i] - mediaY);
+                    varX += Math.pow(x[i] - mediaX, 2);
+                    varY += Math.pow(y[i] - mediaY, 2);
+                }
+
+                const pearson = cov / Math.sqrt(varX * varY);
+                const r2 = pearson * pearson;
+                const a = cov / varX;
+                const b = mediaY - a * mediaX;
+
+                document.getElementById('corr-cov').textContent = (cov / (n - 1)).toFixed(4);
+                document.getElementById('corr-pearson').textContent = pearson.toFixed(4);
+                document.getElementById('corr-r2').textContent = r2.toFixed(4);
+                document.getElementById('corr-a').textContent = a.toFixed(4);
+                document.getElementById('corr-b').textContent = b.toFixed(4);
+                document.getElementById('corr-eq').textContent = `Y = ${a.toFixed(4)}X + ${b.toFixed(4)}`;
+
+                document.getElementById('resultado-corr').classList.add('show');
+
+                // Gráfico
+                const canvas = document.getElementById('regression-chart');
+                const ctx = canvas.getContext('2d');
+                if (window.regressionChart) window.regressionChart.destroy();
+
+                const predictedY = x.map(xi => a * xi + b);
+
+                window.regressionChart = new Chart(ctx, {
+                    type: 'scatter',
+                    data: {
+                        datasets: [
+                            {
+                                label: 'Datos',
+                                data: x.map((xi, i) => ({ x: xi, y: y[i] })),
+                                borderColor: '#667eea',
+                                backgroundColor: 'rgba(102, 126, 234, 0.5)',
+                                borderWidth: 2,
+                                pointRadius: 5
+                            },
+                            {
+                                label: 'Línea de Regresión',
+                                data: x.map((xi, i) => ({ x: xi, y: predictedY[i] })),
+                                borderColor: '#ff6b6b',
+                                borderWidth: 2,
+                                fill: false,
+                                tension: 0
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: true },
+                            title: { display: true, text: 'Regresión Lineal' }
+                        }
+                    }
+                });
+
+                document.getElementById('chart-corr').style.display = 'block';
+            }
+
+            // ===== ESTADÍSTICA INFERENCIAL =====
+
+            function calcularIC() {
+                const media = parseFloat(document.getElementById('ic-media').value);
+                const desv = parseFloat(document.getElementById('ic-desv').value);
+                const n = parseFloat(document.getElementById('ic-n').value);
+                const conf = parseFloat(document.getElementById('ic-conf').value);
+
+                const z = obtenerZ(conf);
+                const ee = desv / Math.sqrt(n);
+                const me = z * ee;
+
+                const inf = media - me;
+                const sup = media + me;
+
+                document.getElementById('ic-ee').textContent = ee.toFixed(4);
+                document.getElementById('ic-z').textContent = z.toFixed(4);
+                document.getElementById('ic-me').textContent = me.toFixed(4);
+                document.getElementById('ic-intervalo').textContent = `[${inf.toFixed(4)}, ${sup.toFixed(4)}]`;
+
+                document.getElementById('resultado-ic').classList.add('show');
+            }
+
+            function calcularTTest() {
+                const media = parseFloat(document.getElementById('t-test-media').value);
+                const desv = parseFloat(document.getElementById('t-test-desv').value);
+                const n = parseFloat(document.getElementById('t-test-n').value);
+                const h0 = parseFloat(document.getElementById('t-test-h0').value);
+                const tipo = document.getElementById('t-test-tipo').value;
+
+                const gl = n - 1;
+                const ee = desv / Math.sqrt(n);
+                const t = (media - h0) / ee;
+
+                // Aproximación simple de p-valor
+                let pvalor = 0;
+                if (tipo === 'bilateral') {
+                    pvalor = Math.abs(t) > 2 ? 0.05 : 0.25;
+                } else {
+                    pvalor = Math.abs(t) > 1.7 ? 0.05 : 0.25;
+                }
+
+                const conclus = pvalor <= 0.05 ? 'Rechazar H₀' : 'No rechazar H₀';
+
+                document.getElementById('ttest-gl').textContent = gl;
+                document.getElementById('ttest-t').textContent = t.toFixed(4);
+                document.getElementById('ttest-pvalor').textContent = pvalor.toFixed(4);
+                document.getElementById('ttest-conclus').textContent = conclus;
+
+                document.getElementById('resultado-ttest').classList.add('show');
+            }
+
+            function calcularChi2() {
+                const obs = parseDatos(document.getElementById('chi2-observadas').value);
+                const esp = parseDatos(document.getElementById('chi2-esperadas').value);
+
+                if (obs.length !== esp.length || obs.length === 0) {
+                    alert('Datos inválidos');
+                    return;
+                }
+
+                let chi2 = 0;
+                for (let i = 0; i < obs.length; i++) {
+                    chi2 += Math.pow(obs[i] - esp[i], 2) / esp[i];
+                }
+
+                const gl = obs.length - 1;
+                const conclus = chi2 > 7.815 ? 'Variables dependientes (rechazar H₀)' : 'Variables independientes (no rechazar H₀)';
+
+                document.getElementById('chi2-gl').textContent = gl;
+                document.getElementById('chi2-estadistico').textContent = chi2.toFixed(4);
+                document.getElementById('chi2-conclus').textContent = conclus;
+
+                document.getElementById('resultado-chi2').classList.add('show');
+            }
+
+            function calcularProporciones() {
+                const x = parseFloat(document.getElementById('prop-x').value);
+                const n = parseFloat(document.getElementById('prop-n').value);
+                const conf = parseFloat(document.getElementById('prop-conf').value);
+
+                const p = x / n;
+                const z = obtenerZ(conf);
+                const ee = Math.sqrt(p * (1 - p) / n);
+                const me = z * ee;
+
+                const inf = Math.max(0, p - me);
+                const sup = Math.min(1, p + me);
+
+                document.getElementById('prop-p').textContent = p.toFixed(4);
+                document.getElementById('prop-ee').textContent = ee.toFixed(4);
+                document.getElementById('prop-me').textContent = me.toFixed(4);
+                document.getElementById('prop-intervalo').textContent = `[${inf.toFixed(4)}, ${sup.toFixed(4)}]`;
+
+                document.getElementById('resultado-prop').classList.add('show');
+            }
+
+            // ===== DISTRIBUCIONES =====
+
+            function calcularNormal() {
+                const media = parseFloat(document.getElementById('norm-media').value);
+                const desv = parseFloat(document.getElementById('norm-desv').value);
+                const x = parseFloat(document.getElementById('norm-x').value);
+                const tipo = document.getElementById('norm-tipo').value;
+
+                const z = (x - media) / desv;
+                let prob = 0;
+
+                // Función de distribución acumulada aproximada
+                const normCDF = (t) => {
+                    const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741;
+                    const a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911;
+
+                    const sign = t < 0 ? -1 : 1;
+                    t = Math.abs(t) / Math.sqrt(2);
+
+                    const t_val = 1 / (1 + p * t);
+                    const y = 1 - (((((a5 * t_val + a4) * t_val + a3) * t_val + a2) * t_val + a1) * t_val) * Math.exp(-t * t);
+
+                    return 0.5 * (1 + sign * y);
+                };
+
+                if (tipo === 'menor') {
+                    prob = normCDF(z);
+                } else if (tipo === 'mayor') {
+                    prob = 1 - normCDF(z);
+                } else {
+                    const x2 = parseFloat(document.getElementById('norm-x2').value);
+                    const z2 = (x2 - media) / desv;
+                    prob = Math.abs(normCDF(z2) - normCDF(z));
+                }
+
+                document.getElementById('norm-z').textContent = z.toFixed(4);
+                document.getElementById('norm-prob').textContent = prob.toFixed(4);
+
+                document.getElementById('resultado-norm').classList.add('show');
+            }
+
+            function calcularBinomial() {
+                const n = parseFloat(document.getElementById('binom-n').value);
+                const k = parseFloat(document.getElementById('binom-k').value);
+                const p = parseFloat(document.getElementById('binom-p').value);
+
+                // Función factorial
+                const factorial = (x) => x <= 1 ? 1 : x * factorial(x - 1);
+
+                // Combinatorio
+                const combinatorio = (n, k) => factorial(n) / (factorial(k) * factorial(n - k));
+
+                const prob = combinatorio(n, k) * Math.pow(p, k) * Math.pow(1 - p, n - k);
+                const media = n * p;
+                const varianza = n * p * (1 - p);
+                const desv = Math.sqrt(varianza);
+
+                document.getElementById('binom-prob').textContent = prob.toFixed(6);
+                document.getElementById('binom-media').textContent = media.toFixed(4);
+                document.getElementById('binom-var').textContent = varianza.toFixed(4);
+                document.getElementById('binom-desv').textContent = desv.toFixed(4);
+
+                document.getElementById('resultado-binom').classList.add('show');
+            }
+
+            function calcularPoisson() {
+                const lambda = parseFloat(document.getElementById('poisson-lambda').value);
+                const k = parseFloat(document.getElementById('poisson-k').value);
+
+                const prob = (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k);
+
+                document.getElementById('poisson-prob').textContent = prob.toFixed(6);
+                document.getElementById('poisson-media').textContent = lambda.toFixed(4);
+                document.getElementById('poisson-var').textContent = lambda.toFixed(4);
+
+                document.getElementById('resultado-poisson').classList.add('show');
+            }
+
+            function factorial(n) {
+                return n <= 1 ? 1 : n * factorial(n - 1);
+            }
+
+            function obtenerZ(conf) {
+                const valores = {
+                    '90': 1.645,
+                    '95': 1.96,
+                    '99': 2.576
+                };
+                return valores[conf] || 1.96;
+            }
+
+            // ===== VARIANZAS Y DESVIACIONES ESTÁNDAR =====
+
+            function calcularVarianzaSimple() {
+                const datos = parseDatos(document.getElementById('var-datos').value);
+                if (datos.length === 0) {
+                    alert('Ingresa datos válidos');
+                    return;
+                }
+
+                const media = datos.reduce((a, b) => a + b, 0) / datos.length;
+                const rango = Math.max(...datos) - Math.min(...datos);
+
+                // Varianza poblacional
+                const varPob = datos.reduce((a, x) => a + Math.pow(x - media, 2), 0) / datos.length;
+                const desvPob = Math.sqrt(varPob);
+
+                // Varianza muestral (con n-1)
+                const varMuestra = datos.reduce((a, x) => a + Math.pow(x - media, 2), 0) / (datos.length - 1);
+                const desvMuestra = Math.sqrt(varMuestra);
+
+                document.getElementById('var-media').textContent = media.toFixed(4);
+                document.getElementById('var-pob').textContent = varPob.toFixed(4);
+                document.getElementById('desv-pob').textContent = desvPob.toFixed(4);
+                document.getElementById('var-muestra').textContent = varMuestra.toFixed(4);
+                document.getElementById('desv-muestra').textContent = desvMuestra.toFixed(4);
+                document.getElementById('var-rango').textContent = rango.toFixed(4);
+
+                document.getElementById('resultado-var-simple').classList.add('show');
+            }
+
+            function calcularANOVA() {
+                const g1 = parseDatos(document.getElementById('anova-g1').value);
+                const g2 = parseDatos(document.getElementById('anova-g2').value);
+                const g3Str = document.getElementById('anova-g3').value.trim();
+                let g3 = g3Str ? parseDatos(g3Str) : [];
+
+                const grupos = [g1, g2].concat(g3.length > 0 ? [g3] : []);
+
+                if (g1.length === 0 || g2.length === 0) {
+                    alert('Ingresa al menos 2 grupos');
+                    return;
+                }
+
+                // Calcular medias
+                const medias = grupos.map(g => g.reduce((a, b) => a + b, 0) / g.length);
+                const mediaTotal = grupos.flat().reduce((a, b) => a + b, 0) / grupos.flat().length;
+
+                // Suma de Cuadrados Entre Grupos
+                let sce = 0;
+                grupos.forEach((g, i) => {
+                    sce += g.length * Math.pow(medias[i] - mediaTotal, 2);
+                });
+
+                // Suma de Cuadrados Dentro de Grupos
+                let scd = 0;
+                grupos.forEach((g, i) => {
+                    g.forEach(x => {
+                        scd += Math.pow(x - medias[i], 2);
+                    });
+                });
+
+                const n = grupos.flat().length;
+                const k = grupos.length;
+                const gle = k - 1;
+                const gld = n - k;
+                const sct = sce + scd;
+                const glt = n - 1;
+
+                const cme = sce / gle;
+                const cmd = scd / gld;
+                const f = cme / cmd;
+
+                // Conclusión aproximada
+                const conclus = f > 3.5 ? 'Rechazar H₀: Hay diferencias significativas' : 'No rechazar H₀: No hay diferencias significativas';
+
+                document.getElementById('anova-sce').textContent = sce.toFixed(4);
+                document.getElementById('anova-gle').textContent = gle;
+                document.getElementById('anova-cme').textContent = cme.toFixed(4);
+                document.getElementById('anova-f').textContent = f.toFixed(4);
+                document.getElementById('anova-scd').textContent = scd.toFixed(4);
+                document.getElementById('anova-gld').textContent = gld;
+                document.getElementById('anova-cmd').textContent = cmd.toFixed(4);
+                document.getElementById('anova-sct').textContent = sct.toFixed(4);
+                document.getElementById('anova-glt').textContent = glt;
+                document.getElementById('anova-conclus').textContent = conclus;
+
+                document.getElementById('resultado-anova').classList.add('show');
+            }
+
+            function calcularTestF() {
+                const var1 = parseFloat(document.getElementById('testf-var1').value);
+                const var2 = parseFloat(document.getElementById('testf-var2').value);
+                const gl1 = parseFloat(document.getElementById('testf-gl1').value);
+                const gl2 = parseFloat(document.getElementById('testf-gl2').value);
+
+                const f = var1 > var2 ? var1 / var2 : var2 / var1;
+                const gln = var1 > var2 ? gl1 : gl2;
+                const gld = var1 > var2 ? gl2 : gl1;
+
+                const conclus = f > 2.2 ? 'Rechazar H₀: Varianzas diferentes' : 'No rechazar H₀: Varianzas iguales';
+
+                document.getElementById('testf-f').textContent = f.toFixed(4);
+                document.getElementById('testf-gln').textContent = gln;
+                document.getElementById('testf-gld').textContent = gld;
+                document.getElementById('testf-conclus').textContent = conclus;
+
+                document.getElementById('resultado-testf').classList.add('show');
+            }
+
+            function calcularICVarianza() {
+                const varianza = parseFloat(document.getElementById('icv-var').value);
+                const n = parseFloat(document.getElementById('icv-n').value);
+                const conf = parseFloat(document.getElementById('icv-conf').value);
+
+                const gl = n - 1;
+
+                // Valores chi-cuadrado aproximados
+                let chiInf, chiSup;
+                if (conf === 95) {
+                    chiInf = gl * 0.025;
+                    chiSup = gl * 0.975;
+                } else if (conf === 99) {
+                    chiInf = gl * 0.005;
+                    chiSup = gl * 0.995;
+                } else {
+                    chiInf = gl * (1 - conf / 100) / 2;
+                    chiSup = gl * (1 + conf / 100) / 2;
+                }
+
+                const limInf = (gl * varianza) / chiSup;
+                const limSup = (gl * varianza) / chiInf;
+
+                document.getElementById('icv-gl').textContent = gl;
+                document.getElementById('icv-chi-inf').textContent = chiInf.toFixed(4);
+                document.getElementById('icv-chi-sup').textContent = chiSup.toFixed(4);
+                document.getElementById('icv-intervalo').textContent = `[${limInf.toFixed(4)}, ${limSup.toFixed(4)}]`;
+
+                document.getElementById('resultado-icv').classList.add('show');
+            }
+
+            function calcularDesvPonderada() {
+                const valores = parseDatos(document.getElementById('desvp-valores').value);
+                const pesos = parseDatos(document.getElementById('desvp-pesos').value);
+
+                if (valores.length !== pesos.length || valores.length === 0) {
+                    alert('Ingresa valores y pesos válidos del mismo tamaño');
+                    return;
+                }
+
+                const sumaPesos = pesos.reduce((a, b) => a + b, 0);
+                const mediaPonderada = valores.reduce((a, x, i) => a + x * pesos[i], 0) / sumaPesos;
+
+                const varPonderada = valores.reduce((a, x, i) => a + pesos[i] * Math.pow(x - mediaPonderada, 2), 0) / sumaPesos;
+                const desvPonderada = Math.sqrt(varPonderada);
+
+                document.getElementById('desvp-media').textContent = mediaPonderada.toFixed(4);
+                document.getElementById('desvp-var').textContent = varPonderada.toFixed(4);
+                document.getElementById('desvp-desv').textContent = desvPonderada.toFixed(4);
+                document.getElementById('desvp-sumapesos').textContent = sumaPesos.toFixed(4);
+
+                document.getElementById('resultado-desvp').classList.add('show');
+            }
+
+            function calcularDatosAgrupados() {
+                const marcas = parseDatos(document.getElementById('dagr-marcas').value);
+                const freq = parseDatos(document.getElementById('dagr-freq').value);
+
+                if (marcas.length !== freq.length || marcas.length === 0) {
+                    alert('Ingresa marcas y frecuencias válidas del mismo tamaño');
+                    return;
+                }
+
+                const n = freq.reduce((a, b) => a + b, 0);
+                const media = marcas.reduce((a, x, i) => a + x * freq[i], 0) / n;
+
+                const varianza = marcas.reduce((a, x, i) => a + freq[i] * Math.pow(x - media, 2), 0) / n;
+                const desv = Math.sqrt(varianza);
+                const cv = (desv / media) * 100;
+
+                document.getElementById('dagr-n').textContent = n;
+                document.getElementById('dagr-media').textContent = media.toFixed(4);
+                document.getElementById('dagr-var').textContent = varianza.toFixed(4);
+                document.getElementById('dagr-desv').textContent = desv.toFixed(4);
+                document.getElementById('dagr-cv').textContent = cv.toFixed(2);
+
+                document.getElementById('resultado-dagr').classList.add('show');
+            }
+        </script>
+</body>
+
+</html>
